@@ -21,23 +21,23 @@ async function mainLoop() {
   checkVerb("Comparing Stable Prices");
   const { usdcPair, daiPair, fusdtPair, mimPair } = await getLPPairs();
 
-  await comparePrice(usdcPair, daiPair).catch((err) => {
-    handError(err);
+  await comparePrice(usdcPair, daiPair).catch(async (err) => {
+    await handleError(err);
   });
-  await comparePrice(usdcPair, fusdtPair).catch((err) => {
-    handError(err);
+  await comparePrice(usdcPair, fusdtPair).catch(async (err) => {
+    await handleError(err);
   });
-  await comparePrice(usdcPair, mimPair).catch((err) => {
-    handError(err);
+  await comparePrice(usdcPair, mimPair).catch(async (err) => {
+    await handleError(err);
   });
-  await comparePrice(daiPair, fusdtPair).catch((err) => {
-    handError(err);
+  await comparePrice(daiPair, fusdtPair).catch(async (err) => {
+    await handleError(err);
   });
-  await comparePrice(daiPair, mimPair).catch((err) => {
-    handError(err);
+  await comparePrice(daiPair, mimPair).catch(async (err) => {
+    await handleError(err);
   });
-  await comparePrice(fusdtPair, mimPair).catch((err) => {
-    handError(err);
+  await comparePrice(fusdtPair, mimPair).catch(async (err) => {
+    await handleError(err);
   });
 
   process.nextTick(mainLoop);
@@ -70,8 +70,8 @@ async function comparePrice(pair1, pair2) {
       flag: "normal",
       tradeAmount: -1,
     };
-    await publishMessage(data).catch((err) => {
-      handError(err);
+    await publishMessage(data).catch(async (err) => {
+      await handleError(err);
     });
     await saveTx({
       action,
@@ -83,8 +83,8 @@ async function comparePrice(pair1, pair2) {
       time: date.getTime(),
       humanTime: date.toUTCString(),
       exchange: "Spookyswap - Stables",
-    }).catch((err) => {
-      handError(err);
+    }).catch(async (err) => {
+      await handleError(err);
     });
   } else if (pair2USD > pair2Goal) {
     const priceDifference = pair2USD - pair1USD;
@@ -105,8 +105,8 @@ async function comparePrice(pair1, pair2) {
       flag: "normal",
       tradeAmount: -1,
     };
-    await publishMessage(data).catch((err) => {
-      handError(err);
+    await publishMessage(data).catch(async (err) => {
+      await handleError(err);
     });
     await saveTx({
       action,
@@ -118,8 +118,8 @@ async function comparePrice(pair1, pair2) {
       time: date.getTime(),
       humanTime: date.toUTCString(),
       exchange: "Spookyswap - Stables",
-    }).catch((err) => {
-      handError(err);
+    }).catch(async (err) => {
+      await handleError(err);
     });
   }
 }
@@ -177,12 +177,12 @@ async function publishMessage(inData) {
     .then(function (response) {
       checkVerb(response);
     })
-    .catch((err) => {
-      handError(err);
+    .catch(async (err) => {
+      await handleError(err);
     });
 }
 
-async function handError(message) {
+async function handleError(message) {
   await axios
     .post("http://127.0.0.1:5544", { message })
     .then(function (response) {
