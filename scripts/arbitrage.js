@@ -1,20 +1,24 @@
-const getPair = require("./utils/getPair");
-const mongoose = require("mongoose");
-const { WFTM, USDC, DAI, FUSDT, MIM } = require("./static/tokens");
-
 const axios = require("axios").default;
+const mongoose = require("mongoose");
+
+const { getPair, checkVerb, saveTx } = require("./utils");
+
+const { WFTM, USDC, DAI, FUSDT, MIM } = require("./static/tokens");
 const {
   usdcFtmLpContract,
   daiFtmLpContract,
   fusdtFtmLpContract,
   mimFtmLpContract,
 } = require("./static/lpContracts");
-const saveTx = require("./utils/writeTransaction");
 
-mongoose.connect(process.env.MONGO_URI).then(() => mainLoop());
+console.log("Starting Arbitrage Bot");
+process.env.MONGO_URI
+  ? mongoose.connect(process.env.MONGO_URI).then(() => mainLoop())
+  : mainLoop();
+console.log("Arbitrage Bot Started");
 
 async function mainLoop() {
-  console.log("Comparing Stable Prices");
+  checkVerb("Comparing Stable Prices");
   const { usdcPair, daiPair, fusdtPair, mimPair } = await getLPPairs();
 
   await comparePrice(usdcPair, daiPair);
@@ -24,32 +28,34 @@ async function mainLoop() {
   await comparePrice(daiPair, mimPair);
   await comparePrice(fusdtPair, mimPair);
 
-  mainLoop();
+  process.nextTick(mainLoop);
 }
 
 async function comparePrice(pair1, pair2) {
-  console.log(`Comparing ${pair1.stableName} to ${pair2.stableName}`);
+  checkVerb(`Comparing ${pair1.stableName} to ${pair2.stableName}`);
   const pair1USD = pair1.stablePrice * pair1.ftmPrice;
   const pair2USD = pair2.stablePrice * pair2.ftmPrice;
   const pair1Goal = pair2USD * 1.02;
   const pair2Goal = pair1USD * 1.02;
-  console.log(`${pair1.stableName} is ${pair1USD} USD`);
-  console.log(`${pair1.stableName} goal is ${pair1Goal} USD`);
+  checkVerb(`${pair1.stableName} is ${pair1USD} USD`);
+  checkVerb(`${pair1.stableName} goal is ${pair1Goal} USD`);
   if (pair1USD > pair1Goal) {
     const priceDifference = pair1USD - pair2USD;
-    console.log(`${pair1.stableName} is ${priceDifference} USD higher than ${pair2.stableName}`);
+    checkVerb(
+      `${pair1.stableName} is ${priceDifference} USD higher than ${pair2.stableName}`
+    );
     const sell = pair1.stableName;
     const buy = pair2.stableName;
     const sellPrice = pair1USD;
     const buyPrice = pair2USD;
     const profit = sellPrice - buyPrice;
     const action = `Trade ${sell} for ${buy}`;
-    console.log(`${action} => Profit: $${profit} per token.`);
+    checkVerb(`${action} => Profit: $${profit} per token.`);
     const date = new Date();
     const data = {
       sell,
       buy,
-      flag: 'normal',
+      flag: "normal",
       tradeAmount: -1,
     };
     await publishMessage(data);
@@ -66,19 +72,21 @@ async function comparePrice(pair1, pair2) {
     });
   } else if (pair2USD > pair2Goal) {
     const priceDifference = pair2USD - pair1USD;
-    console.log(`${pair2.stableName} is ${priceDifference} USD higher than ${pair1.stableName}`);
+    checkVerb(
+      `${pair2.stableName} is ${priceDifference} USD higher than ${pair1.stableName}`
+    );
     const sell = pair2.stableName;
     const buy = pair1.stableName;
     const sellPrice = pair2USD;
     const buyPrice = pair1USD;
     const profit = sellPrice - buyPrice;
     const action = `Trade ${sell} for ${buy}`;
-    console.log(`${action} => Profit: $${profit} per token.`);
+    checkVerb(`${action} => Profit: $${profit} per token.`);
     const date = new Date();
     const data = {
       sell,
       buy,
-      flag: 'normal',
+      flag: "normal",
       tradeAmount: -1,
     };
     await publishMessage(data);
@@ -147,9 +155,9 @@ async function publishMessage(inData) {
   await axios
     .post("http://127.0.0.1:7777", inData)
     .then(function (response) {
-      console.log(response);
+      checkVerb(response);
     })
     .catch(function (error) {
-      console.log(error);
+      checkVerb(error);
     });
 }

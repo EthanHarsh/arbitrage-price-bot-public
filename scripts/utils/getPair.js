@@ -1,4 +1,5 @@
 const { TokenAmount, Pair, Route } = require("@uniswap/sdk");
+const checkVerb = require("./checkVerb");
 
 module.exports = getPair;
 
@@ -11,7 +12,9 @@ async function getPair(contract, lpName, token1, token2, outToken, stableName) {
   const route = new Route([pair], outToken);
   const ftmPrice = route.midPrice.toSignificant(6);
   const stablePrice = route.midPrice.invert().toSignificant(6);
-  console.log(`${lpName} => ${stableName} Price: $${ftmPrice * stablePrice} per token.`);
+  checkVerb(
+    `${lpName} => ${stableName} Price: $${ftmPrice * stablePrice} per token.`
+  );
 
   return {
     ftmPrice,
