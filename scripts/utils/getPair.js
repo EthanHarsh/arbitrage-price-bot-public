@@ -4,6 +4,7 @@ const checkVerb = require("./checkVerb");
 module.exports = getPair;
 
 async function getPair(contract, lpName, token1, token2, outToken, stableName) {
+  // Add error handling
   const reserves = await contract.getReserves();
   const pair = new Pair(
     new TokenAmount(token1, reserves[0]),

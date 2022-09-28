@@ -124,6 +124,7 @@ async function comparePrice(pair1, pair2) {
   }
 }
 
+// Add error handling
 async function getLPPairs() {
   // USDC-FTM
   const usdcPair = await getPair(

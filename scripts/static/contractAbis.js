@@ -1,5 +1,3 @@
-const { get } = require("https");
-
 const ERC20ABI = [
   {
     inputs: [],
